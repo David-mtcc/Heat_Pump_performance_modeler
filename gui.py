@@ -44,15 +44,23 @@ def run_calculation():
 
     # CREAZIONE HEATMAP
     plt.figure(figsize=(10, 8))
-    sns.heatmap(df_map, annot=False, fmt=".1f", cmap="viridis")
+    ax = sns.heatmap(df_map, annot=False, fmt=".1f", cmap="YlOrRd")
+
+    # Imposta tick ogni 5 unità sugli assi (basandoti sull'indice reale)
+    xticks = np.arange(0, len(df_map.columns), 5)
+    yticks = np.arange(0, len(df_map.index), 5)
+
+    ax.set_xticks(xticks)
+    ax.set_xticklabels([df_map.columns[i] for i in xticks])
+    ax.set_yticks(yticks)
+    ax.set_yticklabels([df_map.index[i] for i in yticks])
+
     plt.title(f'Heating Power Map [{refrigerant}]')
     plt.xlabel('Evaporation Temp (°C)')
     plt.ylabel('Condensation Temp (°C)')
     plt.gca().invert_yaxis()
     plt.tight_layout()
     plt.show()
-
-    messagebox.showinfo("Success", f"Results saved to {output_file}")
 
 # Creazione GUI
 root = tk.Tk()
