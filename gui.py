@@ -6,6 +6,8 @@ import calc  # importiamo il modulo di calcolo
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+import plotly.express as px
+import webbrowser
 
 def run_calculation():
     try:
@@ -41,8 +43,8 @@ def run_calculation():
     df_map.to_csv(output_file)
 
     messagebox.showinfo("Success", f"Results saved to {output_file}")
-
-    # CREAZIONE HEATMAP
+    """
+    # CREAZIONE HEATMAP con matplotlib
     plt.figure(figsize=(10, 8))
     ax = sns.heatmap(df_map, annot=False, fmt=".1f", cmap="YlOrRd")
 
@@ -61,6 +63,34 @@ def run_calculation():
     plt.gca().invert_yaxis()
     plt.tight_layout()
     plt.show()
+    """
+    # CREAZIONE HEATMAP INTERATTIVA CON PLOTLY
+    # crei la figura
+    fig = px.imshow(
+        df_map.values,
+        labels=dict(x="Evaporation Temp (°C)", y="Condensation Temp (°C)", color="Heating Power"),
+        x=df_map.columns,
+        y=df_map.index,
+        color_continuous_scale='YlOrRd',
+        origin='lower'
+    )
+    fig.update_layout(title=f'Heating Power Map [{refrigerant}]')
+
+    fig.update_traces(
+        hovertemplate='Heating Power: %{z:.0f} kW<br>Evaporation Temp: %{x}°C<br>Condensation Temp: %{y}°C<extra></extra>'
+    )
+
+    # salva la figura in un file HTML (in una cartella results)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    results_dir = os.path.join(script_dir, 'results')
+    os.makedirs(results_dir, exist_ok=True)
+    html_file = os.path.join(results_dir, 'heatmap.html')
+
+    fig.write_html(html_file)
+
+    # apri il file nel browser di default
+    webbrowser.open(f"file:///{html_file.replace(os.sep, '/')}")
+
 
 # Creazione GUI
 root = tk.Tk()
