@@ -3,6 +3,9 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import os
 import calc  # importiamo il modulo di calcolo
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
 
 def run_calculation():
     try:
@@ -39,6 +42,18 @@ def run_calculation():
 
     messagebox.showinfo("Success", f"Results saved to {output_file}")
 
+    # CREAZIONE HEATMAP
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(df_map, annot=False, fmt=".1f", cmap="viridis")
+    plt.title(f'Heating Power Map [{refrigerant}]')
+    plt.xlabel('Evaporation Temp (°C)')
+    plt.ylabel('Condensation Temp (°C)')
+    plt.gca().invert_yaxis()
+    plt.tight_layout()
+    plt.show()
+
+    messagebox.showinfo("Success", f"Results saved to {output_file}")
+
 # Creazione GUI
 root = tk.Tk()
 root.title("Heat Pump Heating Power Calculator")
@@ -64,12 +79,15 @@ labels = [
     "Max condensation temp (°C):"
 ]
 
+default_values = ['5', '3', '25', '100', '-25', '20', '15', '75']
+
 entries_vars = []
 
-for i, label in enumerate(labels, start=1):
+for i, (label, default) in enumerate(zip(labels, default_values), start=1):
     ttk.Label(mainframe, text=label).grid(row=i, column=0, sticky=tk.W)
     entry = ttk.Entry(mainframe)
     entry.grid(row=i, column=1)
+    entry.insert(0, default)
     entries_vars.append(entry)
 
 (superheat_entry, subcool_entry, displacement_entry,
