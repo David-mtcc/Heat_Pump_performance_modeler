@@ -19,6 +19,7 @@ Usage:
 import sys
 import numpy as np
 import pandas as pd
+import os
 
 # Try to import CoolProp, provide guidance if missing
 try:
@@ -115,7 +116,14 @@ def main():
     print("\nAbsolute heating power map (W):")
     print(df_map)
 
-    output_file = 'heating_power_map.csv'
+     # Ottengo il percorso della cartella dove si trova il file Python
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    results_dir = os.path.join(script_dir, 'results')
+
+    # Creo la cartella results nella stessa directory del file
+    os.makedirs(results_dir, exist_ok=True)
+
+    output_file = os.path.join(results_dir, 'heating_power_map.csv')
     df_map.to_csv(output_file)
     print(f"Results saved to {output_file}")
 
