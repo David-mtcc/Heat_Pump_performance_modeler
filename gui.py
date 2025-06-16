@@ -2,12 +2,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import os
-import calc  # importiamo il modulo di calcolo
-import matplotlib.pyplot as plt
-import seaborn as sns
+import calc  # modulo di calcolo
 import numpy as np
-import plotly.express as px
-import webbrowser
+import results  # modulo per la gestione dei risultati
 
 def run_calculation():
     try:
@@ -29,6 +26,7 @@ def run_calculation():
         messagebox.showerror("Input Error", "Please enter valid numeric values.")
         return
 
+    # Calcolo della mappa
     df_map = calc.build_heating_map(
         refrigerant, superheat, subcool,
         displacement_cc, speed_rps,
@@ -36,61 +34,17 @@ def run_calculation():
         T_cond_min, T_cond_max
     )
 
+    # Salvataggio risultati
     script_dir = os.path.dirname(os.path.abspath(__file__))
     results_dir = os.path.join(script_dir, 'results')
     os.makedirs(results_dir, exist_ok=True)
     output_file = os.path.join(results_dir, 'heating_power_map.csv')
-    df_map.to_csv(output_file)
 
+    results.save_csv(df_map, output_file)
     messagebox.showinfo("Success", f"Results saved to {output_file}")
-    """
-    # CREAZIONE HEATMAP con matplotlib
-    plt.figure(figsize=(10, 8))
-    ax = sns.heatmap(df_map, annot=False, fmt=".1f", cmap="YlOrRd")
 
-    # Imposta tick ogni 5 unità sugli assi (basandoti sull'indice reale)
-    xticks = np.arange(0, len(df_map.columns), 5)
-    yticks = np.arange(0, len(df_map.index), 5)
-
-    ax.set_xticks(xticks)
-    ax.set_xticklabels([df_map.columns[i] for i in xticks])
-    ax.set_yticks(yticks)
-    ax.set_yticklabels([df_map.index[i] for i in yticks])
-
-    plt.title(f'Heating Power Map [{refrigerant}]')
-    plt.xlabel('Evaporation Temp (°C)')
-    plt.ylabel('Condensation Temp (°C)')
-    plt.gca().invert_yaxis()
-    plt.tight_layout()
-    plt.show()
-    """
-    # CREAZIONE HEATMAP INTERATTIVA CON PLOTLY
-    # crei la figura
-    fig = px.imshow(
-        df_map.values,
-        labels=dict(x="Evaporation Temp (°C)", y="Condensation Temp (°C)", color="Heating Power"),
-        x=df_map.columns,
-        y=df_map.index,
-        color_continuous_scale='YlOrRd',
-        origin='lower'
-    )
-    fig.update_layout(title=f'Heating Power Map [{refrigerant}]')
-
-    fig.update_traces(
-        hovertemplate='Heating Power: %{z:.0f} kW<br>Evaporation Temp: %{x}°C<br>Condensation Temp: %{y}°C<extra></extra>'
-    )
-
-    # salva la figura in un file HTML (in una cartella results)
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    results_dir = os.path.join(script_dir, 'results')
-    os.makedirs(results_dir, exist_ok=True)
-    html_file = os.path.join(results_dir, 'heatmap.html')
-
-    fig.write_html(html_file)
-
-    # apri il file nel browser di default
-    webbrowser.open(f"file:///{html_file.replace(os.sep, '/')}")
-
+    # salva heatmap
+    results.save_heatmap(df_map, refrigerant, results_dir)
 
 # Creazione GUI
 root = tk.Tk()
@@ -118,7 +72,6 @@ labels = [
 ]
 
 default_values = ['5', '3', '25', '100', '-25', '20', '15', '75']
-
 entries_vars = []
 
 for i, (label, default) in enumerate(zip(labels, default_values), start=1):
