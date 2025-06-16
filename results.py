@@ -2,12 +2,21 @@
 import pandas as pd
 import plotly.express as px
 import os
+from tkinter import messagebox
+
+def get_results_dir():
+    """Restituisce il percorso della cartella 'results' accanto allo script, creandola se necessario."""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    results_dir = os.path.join(script_dir, 'results')
+    os.makedirs(results_dir, exist_ok=True)
+    return results_dir
 
 def save_csv(df, path):
     """Salva il DataFrame in un file CSV nel percorso specificato."""
     df.to_csv(path)
+    messagebox.showinfo("Success", f"Results saved to {path}")
 
-def save_heatmap(df, refrigerant, results_dir):
+def save_heatmap(df, refrigerant, path):
     """Crea e mostra una heatmap interattiva con Plotly, con hover personalizzato."""
     fig = px.imshow(
         df.values,
@@ -29,5 +38,4 @@ def save_heatmap(df, refrigerant, results_dir):
     )
     
     # Salva l'HTML nella stessa cartella
-    html_path = os.path.join(results_dir, 'heating_power_map.html')
-    fig.write_html(html_path)
+    fig.write_html(path)

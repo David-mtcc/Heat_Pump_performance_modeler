@@ -35,16 +35,13 @@ def run_calculation():
     )
 
     # Salvataggio risultati
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    results_dir = os.path.join(script_dir, 'results')
-    os.makedirs(results_dir, exist_ok=True)
-    output_file = os.path.join(results_dir, 'heating_power_map.csv')
+    results_dir = results.get_results_dir()
 
-    results.save_csv(df_map, output_file)
-    messagebox.showinfo("Success", f"Results saved to {output_file}")
+    csv_path = os.path.join(results_dir, 'heating_power_map.csv')
+    results.save_csv(df_map, csv_path)
 
-    # salva heatmap
-    results.save_heatmap(df_map, refrigerant, results_dir)
+    html_path = os.path.join(results_dir, 'heating_power_map.html')
+    results.save_heatmap(df_map, refrigerant, html_path)
 
 # Creazione GUI
 root = tk.Tk()
