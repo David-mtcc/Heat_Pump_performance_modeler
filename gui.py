@@ -26,22 +26,46 @@ def run_calculation():
         messagebox.showerror("Input Error", "Please enter valid numeric values.")
         return
 
-    # Calcolo della mappa
-    df_map = calc.build_heating_map(
+    # Calcolo delle mappe
+    df_heating_map = calc.build_heating_map(
         refrigerant, superheat, subcool,
         displacement_cc, speed_rps,
         T_evap_min, T_evap_max,
         T_cond_min, T_cond_max
     )
 
-    # Salvataggio risultati
+    df_electrical_power_map = calc.build_electric_power_map(
+        refrigerant, superheat, subcool,
+        displacement_cc, speed_rps,
+        T_evap_min, T_evap_max,
+        T_cond_min, T_cond_max
+    )
+
+    # Salvataggio risultati heating power
     results_dir = results.get_results_dir()
 
     csv_path = os.path.join(results_dir, 'heating_power_map.csv')
-    results.save_csv(df_map, csv_path)
+    results.save_csv(df_heating_map, csv_path)
 
     html_path = os.path.join(results_dir, 'heating_power_map.html')
-    results.save_heatmap(df_map, refrigerant, html_path)
+    results.save_heatmap(df_heating_map, refrigerant, html_path)
+
+    # Salvataggio risultati electrical power
+    csv_path = os.path.join(results_dir, 'electrical_power_map.csv')
+    results.save_csv(df_electrical_power_map, csv_path)
+
+    html_path = os.path.join(results_dir, 'electrical_power_map.html')
+    results.save_electrical_power_map(df_electrical_power_map, refrigerant, html_path)
+
+    # Salvataggio risultati COP
+    cop_map = df_heating_map / df_electrical_power_map
+    cop_csv  = os.path.join(results_dir, 'cop_map.csv')
+    results.save_csv(cop_map, cop_csv)
+
+    cop_html = os.path.join(results_dir, 'cop_map.html')
+    results.save_cop_map(cop_map, refrigerant, cop_html)
+
+
 
 # Creazione GUI
 root = tk.Tk()
@@ -68,7 +92,7 @@ labels = [
     "Max condensation temp (°C):"
 ]
 
-default_values = ['5', '3', '25', '100', '-25', '20', '15', '75']
+default_values = ['5', '3', '25', '100', '-25', '20', '30', '75']
 entries_vars = []
 
 for i, (label, default) in enumerate(zip(labels, default_values), start=1):

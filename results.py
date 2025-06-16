@@ -34,7 +34,53 @@ def save_heatmap(df, refrigerant, path):
     fig.update_layout(title=f'Heating Power Map [{refrigerant}]')
 
     fig.update_traces(
-        hovertemplate='Heating Power: %{z:.0f} kW<br>Evaporation Temp: %{x}°C<br>Condensation Temp: %{y}°C<extra></extra>'
+        hovertemplate='Heating Power: %{z:.0f} W<br>Evaporation Temp: %{x}°C<br>Condensation Temp: %{y}°C<extra></extra>'
+    )
+    
+    # Salva l'HTML nella stessa cartella
+    fig.write_html(path)
+
+def save_electrical_power_map(df, refrigerant, path):
+    fig = px.imshow(
+        df.values,
+        labels=dict(
+            x="Evaporation Temp (°C)",
+            y="Condensation Temp (°C)",
+            color="Electrical Power"
+        ),
+        x=df.columns,
+        y=df.index,
+        color_continuous_scale='YlOrRd',
+        origin='lower'
+    )
+
+    fig.update_layout(title=f'Electrical Power Map [{refrigerant}]')
+
+    fig.update_traces(
+        hovertemplate='Electrical Power: %{z:.0f} W<br>Evaporation Temp: %{x}°C<br>Condensation Temp: %{y}°C<extra></extra>'
+    )
+    
+    # Salva l'HTML nella stessa cartella
+    fig.write_html(path)
+
+def save_cop_map(df, refrigerant, path):
+    fig = px.imshow(
+        df.values,
+        labels=dict(
+            x="Evaporation Temp (°C)",
+            y="Condensation Temp (°C)",
+            color="cop"
+        ),
+        x=df.columns,
+        y=df.index,
+        color_continuous_scale='YlOrRd',
+        origin='lower'
+    )
+
+    fig.update_layout(title=f'cop [{refrigerant}]')
+
+    fig.update_traces(
+        hovertemplate='COP: %{z:.2f} <br>Evaporation Temp: %{x}°C<br>Condensation Temp: %{y}°C<extra></extra>'
     )
     
     # Salva l'HTML nella stessa cartella
