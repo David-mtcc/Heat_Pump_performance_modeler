@@ -14,7 +14,6 @@ def get_results_dir():
 def save_csv(df, path):
     """Salva il DataFrame in un file CSV nel percorso specificato."""
     df.to_csv(path)
-    messagebox.showinfo("Success", f"Results saved to {path}")
 
 def save_heatmap(df, refrigerant, path):
     """Crea e mostra una heatmap interattiva con Plotly, con hover personalizzato."""

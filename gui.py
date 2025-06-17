@@ -65,6 +65,7 @@ def run_calculation():
     cop_html = os.path.join(results_dir, 'cop_map.html')
     results.save_cop_map(cop_map, refrigerant, cop_html)
 
+    messagebox.showinfo("Success", f"Results saved to {path}")
 
 
 # Creazione GUI

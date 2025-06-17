@@ -105,7 +105,7 @@ def calculate_electrical_power(refrigerant, T_evap, T_cond, superheat, subcool, 
 
     P_shaft = m_dot * w_comp
 
-    P_elec = P_shaft / ETA_MOTOR + 500
+    P_elec = P_shaft / ETA_MOTOR
 
     return P_elec
 
