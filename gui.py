@@ -24,6 +24,18 @@ def run_calculation():
             t_cond = float(t_cond_str)
             points.append((t_evap, t_cond))
 
+        x_vol, y_vol = [], []
+        for x_e, y_e in volumetric_points_entries:
+            x_vol.append(float(x_e.get()))
+            y_vol.append(float(y_e.get()))
+        volumetric_coeffs = np.polyfit(x_vol, y_vol, 5)
+        
+        x_iso, y_iso = [], []
+        for x_e, y_e in isentropic_points_entries:
+            x_iso.append(float(x_e.get()))
+            y_iso.append(float(y_e.get()))
+        isentropic_coeffs = np.polyfit(x_iso, y_iso, 5)
+
     except ValueError:
         messagebox.showerror("Input Error", "Please enter valid numeric values.")
         return
@@ -34,13 +46,13 @@ def run_calculation():
     df_heating_map = calc.build_heating_map(
         refrigerant, superheat, subcool,
         displacement_cc, speed_rps,
-        grid_points
+        grid_points, volumetric_coeffs, isentropic_coeffs
     )
 
     df_electrical_power_map = calc.build_electric_power_map(
         refrigerant, superheat, subcool,
         displacement_cc, speed_rps,
-        grid_points
+        grid_points, volumetric_coeffs, isentropic_coeffs
     )
 
     # Salvataggio risultati heating power
@@ -133,7 +145,35 @@ for i, (t_evap_default, t_cond_default) in enumerate(default_points):
     cond_entry.insert(0, str(t_cond_default))
     cond_entries.append(cond_entry)
 
+# GUI: inserimento punti per volumetric efficiency
+volumetric_points_entries = []
+ttk.Label(mainframe, text="Volumetric Efficiency: insert 4 points (x, y)").grid(row=15, column=0, columnspan=4, pady=(10,0))
+for i in range(4):
+    x_entry = ttk.Entry(mainframe, width=6)
+    y_entry = ttk.Entry(mainframe, width=6)
+    x_entry.grid(row=16+i, column=1)
+    y_entry.grid(row=16+i, column=3)
+    x_entry.insert(0, str([0, 4, 7, 10][i]))
+    y_entry.insert(0, str([0.4, 0.85, 0.6, 0.25][i]))
+    ttk.Label(mainframe, text=f"Point {i+1} x:").grid(row=16+i, column=0)
+    ttk.Label(mainframe, text=f"y:").grid(row=16+i, column=2)
+    volumetric_points_entries.append((x_entry, y_entry))
+
+# GUI: inserimento punti per isentropic efficiency
+isentropic_points_entries = []
+ttk.Label(mainframe, text="Isentropic Efficiency: insert 4 points (x, y)").grid(row=20, column=0, columnspan=4, pady=(10,0))
+for i in range(4):
+    x_entry = ttk.Entry(mainframe, width=6)
+    y_entry = ttk.Entry(mainframe, width=6)
+    x_entry.grid(row=21+i, column=1)
+    y_entry.grid(row=21+i, column=3)
+    x_entry.insert(0, str([0, 4, 7, 10][i]))
+    y_entry.insert(0, str([0.4, 0.85, 0.6, 0.25][i]))
+    ttk.Label(mainframe, text=f"Point {i+1} x:").grid(row=21+i, column=0)
+    ttk.Label(mainframe, text=f"y:").grid(row=21+i, column=2)
+    isentropic_points_entries.append((x_entry, y_entry))
+
 calc_button = ttk.Button(mainframe, text="Calculate and Save", command=run_calculation)
-calc_button.grid(row=14, column=0, columnspan=4, pady=10)
+calc_button.grid(row=25, column=0, columnspan=4, pady=10)
 
 root.mainloop()

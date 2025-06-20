@@ -26,15 +26,15 @@ def generate_grid_inside_polygon(polygon_points, resolution=1.0):
     return grid_points
 
 
-def volumetric_efficiency(ratio_compression):
-    # Puoi personalizzare questa funzione in futuro
-    return 0.7
+def volumetric_efficiency(ratio_compression, coeffs):
+    eta = np.polyval(coeffs, ratio_compression)
+    return eta
 
-def eta_isentropic_empiric(ratio_compression):
-    # Puoi personalizzare questa funzione in futuro
-    return 0.7
+def eta_isentropic_empiric(ratio_compression, coeffs):
+    eta = np.polyval(coeffs, ratio_compression)
+    return eta
 
-def calculate_heating_power(refrigerant, T_evap, T_cond, superheat, subcool, displacement_cc, speed_rps):
+def refrigerant_cycle_calculation(refrigerant, T_evap, T_cond, superheat, subcool, displacement_cc, speed_rps, volumetric_coeffs, isentropic_coeffs):
     T_evap_K = T_evap + 273.15
     T_cond_K = T_cond + 273.15
 
@@ -51,8 +51,8 @@ def calculate_heating_power(refrigerant, T_evap, T_cond, superheat, subcool, dis
     p2 = PropsSI('P', 'T', T_cond_K, 'Q', 1, refrigerant)
     ratio_compression = p2 / p1
 
-    eta_isentropic = eta_isentropic_empiric(ratio_compression)
-    eta_volumetric = volumetric_efficiency(ratio_compression)
+    eta_isentropic = eta_isentropic_empiric(ratio_compression, isentropic_coeffs)
+    eta_volumetric = volumetric_efficiency(ratio_compression, volumetric_coeffs)
 
     # Stato 2 reale (tenendo conto dell'efficienza isentropica)
     h2 = h1 + (h2s - h1) / eta_isentropic
@@ -66,9 +66,13 @@ def calculate_heating_power(refrigerant, T_evap, T_cond, superheat, subcool, dis
     q_cond = h2 - h3  # entalpia ceduta al condensatore per kg
     Q_dot = q_cond * m_dot  # potenza termica (W)
 
-    return Q_dot
+    w_comp = (h2s - h1) / eta_isentropic  # lavoro specifico di compressione (J/kg)
+    P_shaft = m_dot * w_comp              # potenza al compressore (W)
+    P_elec = P_shaft / ETA_MOTOR          # potenza elettrica (W)
 
-def build_heating_map(refrigerant, superheat, subcool, displacement_cc, speed_rps, points):
+    return Q_dot, P_elec
+
+def build_heating_map(refrigerant, superheat, subcool, displacement_cc, speed_rps, points, volumetric_coeffs, isentropic_coeffs):
     import pandas as pd
     # Estraggo le temperature uniche per righe (cond) e colonne (evap) per indicizzare la DataFrame
     evap_temps = sorted(set(p[0] for p in points))
@@ -79,44 +83,15 @@ def build_heating_map(refrigerant, superheat, subcool, displacement_cc, speed_rp
     heating_map.columns.name = 'T_evap (°C)'
 
     for (T_evap, T_cond) in points:
-        heating_map.at[T_cond, T_evap] = calculate_heating_power(
+        Q_dot, _ = refrigerant_cycle_calculation(
             refrigerant, T_evap, T_cond,
             superheat, subcool,
-            displacement_cc, speed_rps
+            displacement_cc, speed_rps, volumetric_coeffs, isentropic_coeffs
         )
+        heating_map.at[T_cond, T_evap] = Q_dot
     return heating_map
 
-def calculate_electrical_power(refrigerant, T_evap, T_cond, superheat, subcool, displacement_cc, speed_rps):
-    T_evap_K = T_evap + 273.15
-    T_cond_K = T_cond + 273.15
-
-    h1 = PropsSI('H', 'T', T_evap_K + superheat, 'Q', 1, refrigerant)
-    s1 = PropsSI('S', 'T', T_evap_K + superheat, 'Q', 1, refrigerant)
-    h2s = PropsSI('H', 'S', s1, 'T', T_cond_K, refrigerant)
-    h3 = PropsSI('H', 'T', T_cond_K - subcool, 'Q', 0, refrigerant)
-
-    p1 = PropsSI('P', 'T', T_evap_K + superheat, 'Q', 1, refrigerant)
-    p2 = PropsSI('P', 'T', T_cond_K, 'Q', 1, refrigerant)
-    ratio_compression = p2 / p1
-
-    eta_isentropic = eta_isentropic_empiric(ratio_compression)
-    eta_volumetric = volumetric_efficiency(ratio_compression)
-
-    h2 = h1 + (h2s - h1) / eta_isentropic
-
-    displacement_m3 = displacement_cc * 1e-6
-    vol_flow = displacement_m3 * speed_rps * eta_volumetric
-
-    rho = PropsSI('D', 'T', T_evap_K + superheat, 'Q', 1, refrigerant)
-    m_dot = vol_flow * rho
-
-    w_comp = (h2s - h1) / eta_isentropic  # lavoro specifico di compressione (J/kg)
-    P_shaft = m_dot * w_comp              # potenza al compressore (W)
-    P_elec = P_shaft / ETA_MOTOR          # potenza elettrica (W)
-
-    return P_elec
-
-def build_electric_power_map(refrigerant, superheat, subcool, displacement_cc, speed_rps, points):
+def build_electric_power_map(refrigerant, superheat, subcool, displacement_cc, speed_rps, points, volumetric_coeffs, isentropic_coeffs):
     import pandas as pd
     evap_temps = sorted(set(p[0] for p in points))
     cond_temps = sorted(set(p[1] for p in points))
@@ -126,9 +101,10 @@ def build_electric_power_map(refrigerant, superheat, subcool, displacement_cc, s
     electric_power_map.columns.name = 'T_evap (°C)'
 
     for (T_evap, T_cond) in points:
-        electric_power_map.at[T_cond, T_evap] = calculate_electrical_power(
+        _ , W_dot = refrigerant_cycle_calculation(
             refrigerant, T_evap, T_cond,
             superheat, subcool,
-            displacement_cc, speed_rps
+            displacement_cc, speed_rps, volumetric_coeffs, isentropic_coeffs
         )
+        electric_power_map.at[T_cond, T_evap]=W_dot
     return electric_power_map
