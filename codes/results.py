@@ -3,11 +3,41 @@ import pandas as pd
 import plotly.express as px
 import os
 from tkinter import messagebox
+import numpy as np
+
+def save_efficiency_plot(coeffs, points, title, ylabel, filename_base, results_dir):
+    # genera range x per il plot (da minimo a massimo x dei punti)
+    x_vals = np.linspace(min(x for x, y in points), max(x for x, y in points), 100)
+    y_vals = np.polyval(coeffs, x_vals)
+
+    df = pd.DataFrame({'x': x_vals, 'y': y_vals})
+
+    fig = px.line(df, x='x', y='y', title=title, labels={'x': 'Compression ratio', 'y': ylabel})
+
+    # salva file con nome unico
+    path = os.path.join(results_dir, f"{filename_base}.html")
+    
+    # usa la stessa funzione per nome univoco (da import results)
+    path = get_unique_filepath(path)
+    fig.write_html(path)
+    return path
+
+def get_unique_filepath(filepath):
+    if not os.path.exists(filepath):
+        return filepath
+    base, ext = os.path.splitext(filepath)
+    i = 1
+    new_filepath = f"{base}({i}){ext}"
+    while os.path.exists(new_filepath):
+        i += 1
+        new_filepath = f"{base}({i}){ext}"
+    return new_filepath
 
 def get_results_dir():
     """Restituisce il percorso della cartella 'results' accanto allo script, creandola se necessario."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    results_dir = os.path.join(script_dir, 'results')
+    project_root = os.path.dirname(script_dir)  
+    results_dir = os.path.join(project_root, 'results')
     os.makedirs(results_dir, exist_ok=True)
     return results_dir
 

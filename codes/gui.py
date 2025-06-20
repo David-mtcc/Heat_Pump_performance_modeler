@@ -28,13 +28,13 @@ def run_calculation():
         for x_e, y_e in volumetric_points_entries:
             x_vol.append(float(x_e.get()))
             y_vol.append(float(y_e.get()))
-        volumetric_coeffs = np.polyfit(x_vol, y_vol, 5)
+        volumetric_coeffs = np.polyfit(x_vol, y_vol, 4)
         
         x_iso, y_iso = [], []
         for x_e, y_e in isentropic_points_entries:
             x_iso.append(float(x_e.get()))
             y_iso.append(float(y_e.get()))
-        isentropic_coeffs = np.polyfit(x_iso, y_iso, 5)
+        isentropic_coeffs = np.polyfit(x_iso, y_iso, 4)
 
     except ValueError:
         messagebox.showerror("Input Error", "Please enter valid numeric values.")
@@ -59,25 +59,50 @@ def run_calculation():
     results_dir = results.get_results_dir()
 
     csv_path = os.path.join(results_dir, 'heating_power_map.csv')
+    csv_path = results.get_unique_filepath(csv_path)
     results.save_csv(df_heating_map, csv_path)
 
     html_path = os.path.join(results_dir, 'heating_power_map.html')
+    html_path = results.get_unique_filepath(html_path)
     results.save_heatmap(df_heating_map, refrigerant, html_path)
 
-    # Salvataggio risultati electrical power
+   # Salvataggio risultati electrical power
     csv_path = os.path.join(results_dir, 'electrical_power_map.csv')
+    csv_path = results.get_unique_filepath(csv_path)
     results.save_csv(df_electrical_power_map, csv_path)
 
     html_path = os.path.join(results_dir, 'electrical_power_map.html')
+    html_path = results.get_unique_filepath(html_path)
     results.save_electrical_power_map(df_electrical_power_map, refrigerant, html_path)
 
-    # Salvataggio risultati COP
     cop_map = df_heating_map / df_electrical_power_map
+
+    # Salvataggio risultati COP
     cop_csv  = os.path.join(results_dir, 'cop_map.csv')
+    cop_csv = results.get_unique_filepath(cop_csv)
     results.save_csv(cop_map, cop_csv)
 
     cop_html = os.path.join(results_dir, 'cop_map.html')
+    cop_html = results.get_unique_filepath(cop_html)
     results.save_cop_map(cop_map, refrigerant, cop_html)
+
+    volumetric_plot_path = results.save_efficiency_plot(
+        volumetric_coeffs, 
+        [(float(x.get()), float(y.get())) for x,y in volumetric_points_entries],
+        title="Volumetric Efficiency Curve",
+        ylabel="Volumetric Efficiency",
+        filename_base="volumetric_efficiency_curve",
+        results_dir=results_dir
+    )
+
+    isentropic_plot_path = results.save_efficiency_plot(
+        isentropic_coeffs, 
+        [(float(x.get()), float(y.get())) for x,y in isentropic_points_entries],
+        title="Isentropic Efficiency Curve",
+        ylabel="Isentropic Efficiency",
+        filename_base="isentropic_efficiency_curve",
+        results_dir=results_dir
+    )
 
     messagebox.showinfo("Success", f"Results saved to {results_dir}")
 
@@ -168,7 +193,7 @@ for i in range(4):
     x_entry.grid(row=21+i, column=1)
     y_entry.grid(row=21+i, column=3)
     x_entry.insert(0, str([0, 4, 7, 10][i]))
-    y_entry.insert(0, str([0.4, 0.85, 0.6, 0.25][i]))
+    y_entry.insert(0, str([0.7, 0.8, 0.6, 0.25][i]))
     ttk.Label(mainframe, text=f"Point {i+1} x:").grid(row=21+i, column=0)
     ttk.Label(mainframe, text=f"y:").grid(row=21+i, column=2)
     isentropic_points_entries.append((x_entry, y_entry))

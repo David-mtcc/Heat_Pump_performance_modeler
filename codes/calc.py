@@ -27,12 +27,12 @@ def generate_grid_inside_polygon(polygon_points, resolution=1.0):
 
 
 def volumetric_efficiency(ratio_compression, coeffs):
-    eta = np.polyval(coeffs, ratio_compression)
-    return eta
+    etav = np.polyval(coeffs, ratio_compression)
+    return etav
 
 def eta_isentropic_empiric(ratio_compression, coeffs):
-    eta = np.polyval(coeffs, ratio_compression)
-    return eta
+    etas = np.polyval(coeffs, ratio_compression)
+    return etas
 
 def refrigerant_cycle_calculation(refrigerant, T_evap, T_cond, superheat, subcool, displacement_cc, speed_rps, volumetric_coeffs, isentropic_coeffs):
     T_evap_K = T_evap + 273.15
