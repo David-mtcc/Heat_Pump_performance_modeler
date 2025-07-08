@@ -2,6 +2,7 @@
 
 This project is a heat pump performance model with a Python graphical user interface (Tkinter).  
 It calculates heating power, electrical power, and COP maps based on operating parameters and refrigerants.
+It provides a **flexible**, **interactive**, and **accurate** tool for simulating heat pump performance under customizable operating conditions.
 
 ---
 
@@ -173,4 +174,4 @@ Each valid point undergoes a full thermodynamic simulation. Results are saved as
 
 
 
-This model provides a **flexible**, **interactive**, and **accurate** tool for simulating heat pump performance under customizable operating conditions.
+
