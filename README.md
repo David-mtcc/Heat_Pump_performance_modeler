@@ -38,6 +38,9 @@ Results (CSV files and interactive HTML plots) will be saved in the ```results``
 
 ```results/```: folder where output files are saved (auto-created)
 
+## Example results
+
+
 ---
 ---
 ## 📘 Physical and Mathematical Background
@@ -165,5 +168,9 @@ Each valid point undergoes a full thermodynamic simulation. Results are saved as
 - [Shapely](https://shapely.readthedocs.io/) – polygon geometry and grid generation
 
 ---
+
+### 🚫 7. Limitation and further improvements
+
+
 
 This model provides a **flexible**, **interactive**, and **accurate** tool for simulating heat pump performance under customizable operating conditions.
