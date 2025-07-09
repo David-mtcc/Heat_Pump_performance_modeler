@@ -1,11 +1,10 @@
-#guy.py
 import tkinter as tk
 from tkinter import ttk, messagebox
 import os
-import calc  # modulo di calcolo
+import calc  # calculation module
 import numpy as np
-import results  # modulo per la gestione dei risultati
-from calc import generate_grid_inside_polygon  # aggiungi questo import
+import results  # results management module
+from calc import generate_grid_inside_polygon  # add this import
 
 def run_calculation():
     try:
@@ -15,7 +14,7 @@ def run_calculation():
         displacement_cc = float(displacement_entry.get())
         speed_rps = float(speed_entry.get())
 
-        # Recupera gli 8 punti (T_evap, T_cond)
+        # Retrieve the 8 (T_evap, T_cond) points
         points = []
         for i in range(8):
             t_evap_str = evap_entries[i].get()
@@ -42,7 +41,7 @@ def run_calculation():
 
     grid_points = generate_grid_inside_polygon(points, resolution=1.0)
     
-    # Chiamata funzioni di calcolo passando i punti
+    # Call calculation functions, passing the grid points
     df_heating_map = calc.build_heating_map(
         refrigerant, superheat, subcool,
         displacement_cc, speed_rps,
@@ -55,7 +54,7 @@ def run_calculation():
         grid_points, volumetric_coeffs, isentropic_coeffs
     )
 
-    # Salvataggio risultati heating power
+    # Save heating power results
     results_dir = results.get_results_dir()
 
     csv_path = os.path.join(results_dir, 'heating_power_map.csv')
@@ -66,7 +65,7 @@ def run_calculation():
     html_path = results.get_unique_filepath(html_path)
     results.save_heatmap(df_heating_map, refrigerant, html_path)
 
-   # Salvataggio risultati electrical power
+    # Save electrical power results
     csv_path = os.path.join(results_dir, 'electrical_power_map.csv')
     csv_path = results.get_unique_filepath(csv_path)
     results.save_csv(df_electrical_power_map, csv_path)
@@ -77,7 +76,7 @@ def run_calculation():
 
     cop_map = df_heating_map / df_electrical_power_map
 
-    # Salvataggio risultati COP
+    # Save COP results
     cop_csv  = os.path.join(results_dir, 'cop_map.csv')
     cop_csv = results.get_unique_filepath(cop_csv)
     results.save_csv(cop_map, cop_csv)
@@ -106,7 +105,7 @@ def run_calculation():
 
     messagebox.showinfo("Success", f"Results saved to {results_dir}")
 
-# Creazione GUI
+# GUI creation
 root = tk.Tk()
 root.title("Heat Pump Heating Power Calculator")
 
@@ -120,7 +119,7 @@ refrigerant_combo = ttk.Combobox(mainframe, textvariable=refrigerant_var, state=
 refrigerant_combo['values'] = ('R134a', 'R32', 'R290', 'R410A', 'R454B', 'R407C', 'R744')
 refrigerant_combo.grid(row=0, column=1)
 
-# Parametri base
+# Basic parameters
 labels_basic = [
     "Superheat (K):",
     "Subcooling (K):",
@@ -140,7 +139,7 @@ for i, (label, default) in enumerate(zip(labels_basic, default_values_basic), st
 
 superheat_entry, subcool_entry, displacement_entry, speed_entry = entries_vars
 
-# Ora 8 coppie di punti T_evap, T_cond
+# Now 8 (T_evap, T_cond) point pairs
 ttk.Label(mainframe, text="Define 8 points of (Evap Temp °C, Cond Temp °C) envelope:").grid(row=5, column=0, columnspan=2, pady=(10,0))
 
 evap_entries = []
@@ -170,7 +169,7 @@ for i, (t_evap_default, t_cond_default) in enumerate(default_points):
     cond_entry.insert(0, str(t_cond_default))
     cond_entries.append(cond_entry)
 
-# GUI: inserimento punti per volumetric efficiency
+# GUI: insert points for volumetric efficiency
 volumetric_points_entries = []
 ttk.Label(mainframe, text="Volumetric Efficiency: insert 4 points (x, y)").grid(row=15, column=0, columnspan=4, pady=(10,0))
 for i in range(4):
@@ -184,7 +183,7 @@ for i in range(4):
     ttk.Label(mainframe, text=f"y:").grid(row=16+i, column=2)
     volumetric_points_entries.append((x_entry, y_entry))
 
-# GUI: inserimento punti per isentropic efficiency
+# GUI: insert points for isentropic efficiency
 isentropic_points_entries = []
 ttk.Label(mainframe, text="Isentropic Efficiency: insert 4 points (x, y)").grid(row=20, column=0, columnspan=4, pady=(10,0))
 for i in range(4):
