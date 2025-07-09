@@ -178,6 +178,21 @@ Each valid point undergoes a full thermodynamic simulation. Results are saved as
 
 ### 🚫 7. Limitation and further improvements
 
+#### ⚠️ Low Accuracy at Low Pressure Ratios
+
+This tool relies on user-fitted polynomial curves to model **volumetric** and **isentropic efficiencies** as a function of the **compression ratio**. While this approach works reasonably well across typical operating ranges, the accuracy degrades significantly at **low pressure ratios** (close to 1), especially near the diagonal of the (T_evap, T_cond) map.
+This inaccuracy can lead to unrealistically high heating power or COP
+
+#### 🔧 Potential Improvements
+
+- Implement dynamic curve fitting using more robust models (e.g. logarithmic or rational functions)
+- Validate results against experimental data or manufacturer datasheets
+- Improve extrapolation handling outside the training point range
+- Add visual warnings when the compression ratio is outside a "safe" range
+
+---
+
+
 
 
 
