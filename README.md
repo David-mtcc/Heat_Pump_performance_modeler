@@ -187,7 +187,6 @@ This inaccuracy can lead to unrealistically high heating power or COP
 
 - Implement dynamic curve fitting using more robust models (e.g. logarithmic or rational functions)
 - Validate results against experimental data or manufacturer datasheets
-- Improve extrapolation handling outside the training point range
 - Add visual warnings when the compression ratio is outside a "safe" range
 
 ---
